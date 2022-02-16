@@ -6,6 +6,7 @@
 
 import logging
 
+from charms.nginx_ingress_integrator.v0 import ingress
 from ops import charm, lib, main, model, pebble
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,16 @@ class WaltzOperatorCharm(charm.CharmBase):
             self.db.on.database_relation_broken, self._on_database_relation_broken
         )
         self.framework.observe(self.db.on.master_changed, self._on_master_changed)
+
+        # Setup ingress:
+        self.ingress = ingress.IngressRequires(
+            self,
+            {
+                "service-hostname": self.app.name,
+                "service-name": self.app.name,
+                "service-port": 8080,
+            },
+        )
 
         # General hooks:
         self.framework.observe(self.on.waltz_pebble_ready, self._on_waltz_pebble_ready)

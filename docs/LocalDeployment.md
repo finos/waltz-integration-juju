@@ -10,9 +10,7 @@ The deployment is composed by the following steps:
 - [Install Juju](#Install-Juju)
 - [Bootstrap Juju](#Bootstrap-Juju)
 - [Add the Juju Waltz Model](#Add-the-Juju-Waltz-Model)
-- [Build and deploy the Waltz Charm](#Build-and-deploy-the-Waltz-Charm)
-- [Monitor Juju status](#Monitor-Juju-status)
-- [Create a PostgreSQL database](#Create-a-PostgreSQL-database)
+- [Deploy the Waltz Charm](#Deploy-the-Waltz-Charm)
 - [Use Waltz](#Use-Waltz)
 - [Updating the Waltz Charm](#Updating-the-Waltz-charm) (optional)
 - [Destroy setup](#Destroy-setup) (optional)
@@ -33,7 +31,7 @@ You can add a new model with:
 juju add-model waltz-model
 ```
 
-## Build and deploy the Waltz Charm
+## Deploy the Waltz Charm
 
 When you deploy an charm with Juju, the installation code in the charmed operator will run and set up all the resources and environmental variables needed for the application to run properly.
 
@@ -45,67 +43,38 @@ juju deploy finos-waltz-k8s --channel=edge
 
 In another terminal, you can check the deployment status and the integration code running using `watch --color juju status --color`.
 
-You'll notice that the Unit `finos-waltz-k8s/0` will get to `Waiting` status; this is expected, as you'll need to configure it with postgres database connection details. If you don't have any PostgreSQL database, see [this section](#Create-a-PostgreSQL-database).
+You'll notice that the Unit `finos-waltz-k8s/0` will get to the `Blocked` status; this is expected, as it requires a PostgreSQL database connection. You can deploy a `postgresql-k8s` charm am relate it to the Waltz charm by running:
+
+```bash
+juju deploy postgresql-k8s
+juju relate postgresql-k8s:db finos-waltz-k8s:db
+```
+
+Alternatively, you can configure it with an external PostgreSQL connection details:
 
 ```bash
 juju config finos-waltz-k8s db-host="<db-host>" db-port="<db-port>" db-name="<db-name>" db-username="<db-username>" db-password="<db-password>"
 ```
 
-After the postgres database connection details has been set, the Charm will become active.
+Note that the relation with the `postgresql-k8s` charm takes precedence over the configuration options.
 
-## Create a PostgreSQL database
-
-This section is required if you don't have any PostgreSQL database for Waltz to use.
-
-To install the PostgreSQL database locally, you can run:
-
-```bash
-sudo apt install postgresql
-```
-
-After installing it, you need to configure it to be accessible remotely. First of all, configure on which network the database should be accessible on by editing the ``/etc/postgresql/12/main/pg_hba.conf`` file. For example, you can make it accessible to the ``10.0.0.0/24`` network by adding this line:
-
-```
-host    all             all             10.0.0.0/24             md5
-```
-
-Secondly, the PostgreSQL server needs to be configured to listen on that network by editing the ``/etc/postgresql/12/main/postgresql.conf`` file:
-
-```
-listen_addresses='your-address-on-that-network'
-```
-
-The PostgreSQL server needs to be updated in order for those changes to take effect:
-
-```bash
-sudo systemctl restart postgresql.service
-```
-
-To create a new user to be used by Waltz, run:
-
-```
-sudo su - postgres
-createuser --interactive --pwprompt
-```
-
-To test that the PostgreSQL database is reachable, run:
-
-```bash
-pg_isready --host="your-ip" --port="5432" --username="waltz-username" --dbname="waltz-db"
-```
+After the Waltz charm got its necessary database credentials, it should be come `Active` shortly.
 
 ## Use Waltz
 
 After the Charm became active, you can connect now connect to Waltz. Running ``juju status`` will reveal its IP:
 
 ```
-Model        Controller        Cloud/Region        Version  SLA          Timestamp
-waltz-model  waltz-controller  microk8s/localhost  2.9.22   unsupported  21:35:08Z
-App              Version  Status  Scale  Charm            Store  Channel  Rev  OS          Address         Message
-finos-waltz-k8s           active      1  finos-waltz-k8s  local             0  kubernetes  10.152.183.170
+Model  Controller        Cloud/Region        Version  SLA          Timestamp
+waltz  finos-controller  microk8s/localhost  2.9.22   unsupported  09:06:52Z
 
-Unit                Workload  Agent  Address       Ports  Message
-finos-waltz-k8s/0*  active    idle   10.1.237.129
+App             Version                 Status  Scale  Charm            Store     Channel  Rev  OS          Address         Message
+finos-waltz-k8s                         active      1  finos-waltz-k8s  charmhub  stable     2  kubernetes  10.152.183.143
+postgresql-k8s  .../postgresql@ed0e37f  active      1  postgresql-k8s   charmhub  stable     3  kubernetes
+
+Unit               Workload  Agent  Address       Ports     Message
+finos-waltz/0*     active    idle   10.1.243.230
+postgresql-k8s/0*  active    idle   10.1.243.196  5432/TCP  Pod configured
 ```
 
 Simply connect to ``http://<WALTZ_IP>:8080``.
@@ -128,6 +97,12 @@ You can see the status by running ``juju status``. After it was removed, redeplo
 
 ```bash
 juju deploy ./finos-waltz-k8s_ubuntu-20.04-amd64.charm --resource waltz-image=<another-image>
+```
+
+Afterwards, the relation with the ``postgresql-k8s`` charm has to be recreated:
+
+```bash
+juju relate finos-waltz-k8s:db postgresql-k8s:db
 ```
 
 ## Destroy setup

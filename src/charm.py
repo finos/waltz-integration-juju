@@ -43,7 +43,7 @@ class WaltzOperatorCharm(charm.CharmBase):
         When joining a relation with the PostgreSQL charm, we can request it to provision
         us a database with a name chosen by us.
         """
-        event.database = self.config["db-name"]
+        event.database = self.app.name
 
     def _on_database_relation_broken(self, event: pgsql.DatabaseRelationBrokenEvent):
         """Handles the PostgreSQL database relation broken event.
@@ -61,7 +61,7 @@ class WaltzOperatorCharm(charm.CharmBase):
         including when it has provisioned the database we requested.
         """
         # Check if the requested database has been provided to us.
-        if event.database != self.config["db-name"]:
+        if event.database != self.app.name:
             return
 
         if event.master is None:
@@ -78,12 +78,9 @@ class WaltzOperatorCharm(charm.CharmBase):
         self._rebuild_waltz_pebble_layer(event, container)
 
     def _on_config_changed(self, event):
-        """Refreshes the service config.
-
-        A new Waltz pebble layer specification will be set if any of the
-        configuration options related to Waltz are updated.
-        """
-        self._rebuild_waltz_pebble_layer(event)
+        """Handles the updated charm configuration event."""
+        # Nothing to do, we don't have any config options.
+        pass
 
     def _rebuild_waltz_pebble_layer(self, event, container=None):
         """(Re)Builds the Waltz Pebble Layer.
@@ -134,25 +131,6 @@ class WaltzOperatorCharm(charm.CharmBase):
             # Expected format: 'host=foo.lish port=5432 dbname=waltz user=user password=pass'
             pairs = db_relation.data[db_relation.app]["master"].split()
             return dict([pair.split("=") for pair in pairs])
-
-        # We're not related to a PostgreSQL Server charm. Use the existing configuration.
-        host = self.config["db-host"]
-        port = self.config["db-port"]
-        dbname = self.config["db-name"]
-        username = self.config["db-username"]
-        password = self.config["db-password"]
-
-        # If we don't have any of these configurations, we can't start Waltz.
-        if any([not param for param in [host, port, dbname, username, password]]):
-            return {}
-
-        return {
-            "host": host,
-            "port": port,
-            "dbname": dbname,
-            "user": username,
-            "password": password,
-        }
 
     def _generate_workload_pebble_layer(self, db_config):
         """Generates the Waltz layer for Pebble.

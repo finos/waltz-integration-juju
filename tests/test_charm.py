@@ -42,7 +42,7 @@ class TestCharm(unittest.TestCase):
         """Test for the PostgreSQL relation."""
         # Setup mocks and start the initial hooks.
         container = self.harness.model.unit.get_container("waltz")
-        self._patch(container, "stop")
+        mock_stop = self._patch(container, "stop")
         mock_can_connect = self._patch(container, "can_connect")
         mock_can_connect.return_value = True
 
@@ -50,31 +50,17 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
         self.harness.begin_with_initial_hooks()
 
-        # Update the charm config, the charm should become Active.
-        self.harness.update_config({"db-host": "foo.lish"})
-        self.assertEqual(self.harness.model.unit.status, model.ActiveStatus())
-
-        # Check the service was started.
-        service = self.harness.model.unit.get_container("waltz").get_service("waltz")
-        self.assertTrue(service.is_running())
-
         # Join a PostgreSQL charm. A database relation joined is then triggered. The database
         # name should be set in the event.database. Without it, we can't continue on the
         # master changed event.
         rel_id = self._add_relation("db", "postgresql-charm", {})
 
         # Update the relation data with a PostgreSQL connection string.
-        database_config = {
-            "db-host": "foo.lish",
-            "db-port": "5432",
-            "db-name": self.harness.charm.config["db-name"],
-            "db-username": "someuser",
-            "db-password": "somepass",
-        }
         connection_url = "host=foo.lish port=5432 dbname=%s user=someuser password=somepass"
+        connection_url = connection_url % self.harness.charm.app.name
         rel_data = {
-            "database": self.harness.charm.config["db-name"],
-            "master": connection_url % self.harness.charm.config["db-name"]
+            "database": self.harness.charm.app.name,
+            "master": connection_url,
         }
         self.harness.update_relation_data(rel_id, "postgresql-charm", rel_data)
 
@@ -84,11 +70,15 @@ class TestCharm(unittest.TestCase):
         self.harness.charm.db.on.master_changed.emit(relation, self.harness.charm.app, unit, unit)
 
         # The Pebble plan should be updated with the PostgreSQL connection data from the relation.
+        database_config = dict([pair.split("=") for pair in connection_url.split()])
         self._check_pebble_plan(database_config)
 
-        # Remove the relation, and check that the Pebble plan is reverted to the previous config.
+        # Remove the relation, and check that the charm is now in BlockedStatus and that the
+        # container was stopped.
         self.harness.remove_relation(rel_id)
-        self._check_pebble_plan(self.harness.charm.config)
+
+        self.assertIsInstance(self.harness.model.unit.status, model.BlockedStatus)
+        mock_stop.assert_called_with("waltz")
 
     def test_waltz_pebble_ready(self):
         # Check the initial Pebble plan is empty
@@ -96,37 +86,43 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(initial_plan.to_yaml(), "{}\n")
 
         # Get the waltz container from the model and emit the PebbleReadyEvent carrying it.
+        # We can't connect to the container yet.
         container = self.harness.model.unit.get_container("waltz")
-        mock_stop = self._patch(container, "stop")
+        mock_can_connect = self._patch(container, "can_connect")
+        mock_can_connect.return_value = False
+
+        self.harness.set_leader(True)
         self.harness.begin_with_initial_hooks()
         self.harness.charm.on.waltz_pebble_ready.emit(container)
+        self.assertIsInstance(self.harness.model.unit.status, model.WaitingStatus)
 
-        # No datebase host was configured, so the status should be Blocked.
+        # Reemit the PebbleReadyEvent, and the container can be connected to, but we don't have
+        # a database connection.
+        mock_stop = self._patch(container, "stop")
+        mock_can_connect.return_value = True
+        self.harness.charm.on.waltz_pebble_ready.emit(container)
         self.assertIsInstance(self.harness.model.unit.status, model.BlockedStatus)
 
         # The service was not defined yet, as we did not have any database.
         mock_stop.assert_not_called()
 
-        # Update the charm config, and emit the PebbleReadyEvent again, but we can't
-        # connect to the container yet.
-        mock_can_connect = self._patch(container, "can_connect")
-        mock_can_connect.return_value = False
-        self.harness.charm.on.waltz_pebble_ready.emit(container)
-        self.harness.update_config({"db-host": "foo.lish"})
-        self.assertIsInstance(self.harness.model.unit.status, model.WaitingStatus)
-
-        # Reemit the PebbleReadyEvent, and the container can be connected to. The charm
-        # should become Active.
-        mock_can_connect.return_value = True
-        self.harness.charm.on.waltz_pebble_ready.emit(container)
-        self.assertEqual(self.harness.model.unit.status, model.ActiveStatus())
+        # Add a database relation, and expect it to become active.
+        connection_url = "host=foo.lish port=5432 dbname=%s user=someuser password=somepass"
+        connection_url = connection_url % self.harness.charm.app.name
+        rel_data = {
+            "database": self.harness.charm.app.name,
+            "master": connection_url,
+        }
+        rel_id = self._add_relation("db", "postgresql-charm", rel_data)
 
         # Check the service was started
         service = self.harness.model.unit.get_container("waltz").get_service("waltz")
         self.assertTrue(service.is_running())
+        self.assertEqual(self.harness.model.unit.status, model.ActiveStatus())
 
         # Check that we've got the plan we expected.
-        self._check_pebble_plan(self.harness.charm.config)
+        database_config = dict([pair.split("=") for pair in connection_url.split()])
+        self._check_pebble_plan(database_config)
 
         # Emit the Pebble ready again, make sure that the container is NOT restarted if
         # there was no configuration change.
@@ -145,11 +141,11 @@ class TestCharm(unittest.TestCase):
                     "startup": "enabled",
                     "user": "waltz",
                     "environment": {
-                        "DB_HOST": expected_config["db-host"],
-                        "DB_PORT": expected_config["db-port"],
-                        "DB_NAME": expected_config["db-name"],
-                        "DB_USER": expected_config["db-username"],
-                        "DB_PASSWORD": expected_config["db-password"],
+                        "DB_HOST": expected_config["host"],
+                        "DB_PORT": expected_config["port"],
+                        "DB_NAME": expected_config["dbname"],
+                        "DB_USER": expected_config["user"],
+                        "DB_PASSWORD": expected_config["password"],
                         "DB_SCHEME": "waltz",
                         "WALTZ_FROM_EMAIL": "help@finos.org",
                         "CHANGELOG_FILE": "/opt/waltz/liquibase/db.changelog-master.xml",
@@ -158,22 +154,3 @@ class TestCharm(unittest.TestCase):
             },
         }
         self.assertDictEqual(expected_plan, updated_plan)
-
-    def test_config_changed(self):
-        container = self.harness.model.unit.get_container("waltz")
-        mock_stop = self._patch(container, "stop")
-        self.harness.begin_with_initial_hooks()
-        self.assertIsInstance(self.harness.model.unit.status, model.BlockedStatus)
-
-        # Update the port, expect it to remain in BlockedStatus.
-        self.harness.update_config({"db-port": 9999})
-        self.assertIsInstance(self.harness.model.unit.status, model.BlockedStatus)
-
-        # Update the host, expect it to become Active.
-        self.harness.update_config({"db-host": "foo.lish"})
-        self.assertEqual(self.harness.model.unit.status, model.ActiveStatus())
-
-        # Remove the db-host, and expect the container to be stopped.
-        self.harness.update_config({"db-host": ""})
-        self.assertIsInstance(self.harness.model.unit.status, model.BlockedStatus)
-        mock_stop.assert_called_once_with("waltz")

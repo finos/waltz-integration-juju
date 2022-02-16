@@ -39,7 +39,14 @@ The Waltz Operator charm can be deployed by running:
 juju deploy finos-waltz-k8s --channel=edge
 ```
 
-The Waltz Operator charm will initially be in a Waiting state, it expects postgresql configurations to be set:
+The Waltz Operator charm will initially be in a Blocked state, it expects a PostgreSQL relation to be set:
+
+```
+juju deploy postgresql-k8s
+juju relate finos-waltz-k8s:db postgresql-k8s:db
+```
+
+Alternatively, it can be configured with an external PostgreSQL database connection details:
 
 ```bash
 juju config finos-waltz-k8s db-host="<db-host>" db-port="<db-port>" db-name="<db-name>" db-username="<db-username>" db-password="<db-password>"

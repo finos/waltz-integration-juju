@@ -74,7 +74,7 @@ class TestCharm(unittest.TestCase):
         connection_url = "host=foo.lish port=5432 dbname=%s user=someuser password=somepass"
         rel_data = {
             "database": self.harness.charm.config["db-name"],
-            "master": connection_url % self.harness.charm.config["db-name"]
+            "master": connection_url % self.harness.charm.config["db-name"],
         }
         self.harness.update_relation_data(rel_id, "postgresql-charm", rel_data)
 

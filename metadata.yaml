@@ -17,6 +17,9 @@ requires:
     limit: 1
     scope: global
 
+  ingress:
+    interface: ingress
+
 containers:
   waltz:
     resource: waltz-image

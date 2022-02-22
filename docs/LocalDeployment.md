@@ -10,7 +10,7 @@ The deployment is composed by the following steps:
 - [Install Juju](#Install-Juju)
 - [Bootstrap Juju](#Bootstrap-Juju)
 - [Add the Juju Waltz Model](#Add-the-Juju-Waltz-Model)
-- [Deploy the Waltz Charm](#Deploy-the-Waltz-Charm)
+- [Deploy the Waltz Bundle](#Deploy-the-Waltz-Bundle)
 - [Use Waltz](#Use-Waltz)
 - [Updating the Waltz Charm](#Updating-the-Waltz-charm) (optional)
 - [Destroy setup](#Destroy-setup) (optional)
@@ -31,34 +31,27 @@ You can add a new model with:
 juju add-model waltz-model
 ```
 
-## Deploy the Waltz Charm
+## Deploy the Waltz Bundle
 
-When you deploy an charm with Juju, the installation code in the charmed operator will run and set up all the resources and environmental variables needed for the application to run properly.
+When you deploy an charm with Juju, the installation code in the charmed operator will run and set up all the resources and environmental variables needed for the application to run properly. Deploying a bundle takes it a step further, it deploys a set of charms that can work together and relates them.
 
-Deploy the finos-waltz-k8s charm in the finos-waltz model using the command line:
-
-```bash
-juju deploy finos-waltz-k8s --channel=edge
-```
-
-In another terminal, you can check the deployment status and the integration code running using `watch --color juju status --color`.
-
-You'll notice that the Unit `finos-waltz-k8s/0` will get to the `Blocked` status; this is expected, as it requires a PostgreSQL database connection. You can deploy a `postgresql-k8s` charm am relate it to the Waltz charm by running:
+Deploy the finos-waltz-bundle in the finos-waltz model using the command line:
 
 ```bash
-juju deploy postgresql-k8s
-juju relate postgresql-k8s:db finos-waltz-k8s:db
+juju deploy --trust finos-waltz-bundle --channel=edge
 ```
 
-Alternatively, you can configure it with an external PostgreSQL connection details:
+The bundle contains the following charms: ``finos-waltz-k8s``, ``postgresql-k8s``, and ``nginx-ingress-integrator``. The bundle also creates creates relations between the ``finos-waltz-k8s`` charm and the ``postgresql-k8s`` and ``nginx-ingress-integrator`` charms.
+
+In another terminal, you can check the deployment status and the integration code running using `watch --color juju status --color`. All the charms should become Active after a few minutes.
+
+The FINOS Waltz charm will use the PostgreSQL database provisioned by the ``postgresql-k8s`` charm. Alternatively, you can configure it with an external PostgreSQL connection details:
 
 ```bash
 juju config finos-waltz-k8s db-host="<db-host>" db-port="<db-port>" db-name="<db-name>" db-username="<db-username>" db-password="<db-password>"
 ```
 
 Note that the relation with the `postgresql-k8s` charm takes precedence over the configuration options.
-
-After the Waltz charm got its necessary database credentials, it should be come `Active` shortly.
 
 ## Use Waltz
 
@@ -78,6 +71,20 @@ postgresql-k8s/0*  active    idle   10.1.243.196  5432/TCP  Pod configured
 ```
 
 Simply connect to ``http://<WALTZ_IP>:8080``.
+
+Alternatively, you can connect to the Waltz application through its ``finos-waltz`` name thanks to the ``nginx-ingress-integrator`` charm. For this, you will need add the following line in your `/etc/hosts` file:
+
+```
+127.0.1.1 finos-waltz
+```
+
+**Note:** If the Waltz deployment was done remotely on another machine, then instead of the IP above you should use the IP of that remote machine. This also applies for microk8s deployments on MacOS, in which case you can get the IP of the Multipass VM microk8s is deploy in with the command:
+
+```bash
+multipass list
+```
+
+The ``nginx-ingress-integrator`` charm has a few different configuration options that may be useful, including ``service-hostname`` option, which can be set to your publicly available DNS hostname.
 
 ## Updating the Waltz charm
 

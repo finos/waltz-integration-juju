@@ -56,6 +56,12 @@ Any new functionality added will have to be covered through unit tests. After wr
 tox -e unit
 ```
 
+Additionally, make sure that the integration tests are working properly with your changes. Running the integration tests will require you to have a bootstrapped controller. You can run the integration tests with the following command:
+
+```bash
+tox -e integration
+```
+
 Before pushing the local changes and submitting a Pull Request, make sure that your code is properly formatted and that there are no linting errors:
 
 ```bash

@@ -65,7 +65,7 @@ This charm requires the Waltz docker image: ``ghcr.io/finos/waltz``.
 
 ## Help and Support
 
-Feel free to [create an issue](https://github.com/pedroleaoc/waltz-integration-juju/issues/new/choose) or submit a Pull Request to this repository in order to contribute; make sure to read the Waltz [Contribution Guide](https://github.com/finos/waltz/blob/master/CONTRIBUTING.md) first.
+Feel free to [create an issue](https://github.com/finos/waltz-integration-juju/issues/new/choose) or submit a Pull Request to this repository in order to contribute; make sure to read the Waltz [Contribution Guide](https://github.com/finos/waltz/blob/master/CONTRIBUTING.md) first.
 
 You can also use chat to the contributors to this Waltz integration via the [FINOS Waltz Slack Channel](https://finos-lf.slack.com/archives/C01S1D746TW).
 

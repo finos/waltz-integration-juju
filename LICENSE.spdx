@@ -3,5 +3,5 @@ DataLicense: CC0-1.0
 Creator: Canonical
 PackageName: Charmed Waltz
 PackageOriginator: Canonical
-PackageHomePage: https://github.com/finos/{project slug}
+PackageHomePage: https://github.com/finos/waltz-integration-juju
 PackageLicenseDeclared: Apache-2.0

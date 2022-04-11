@@ -63,6 +63,10 @@ TBA
 
 This charm requires the Waltz docker image: ``ghcr.io/finos/waltz``.
 
+## Charm releases
+
+This repository is configured to automatically build and publish a new Charm revision after a Pull Request merges. For more information, see [here](docs/CharmPublishing.md).
+
 ## Help and Support
 
 Feel free to [create an issue](https://github.com/finos/waltz-integration-juju/issues/new/choose) or submit a Pull Request to this repository in order to contribute; make sure to read the Waltz [Contribution Guide](https://github.com/finos/waltz/blob/master/CONTRIBUTING.md) first.

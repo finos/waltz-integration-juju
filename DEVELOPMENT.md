@@ -68,3 +68,5 @@ Before pushing the local changes and submitting a Pull Request, make sure that y
 tox -e fmt
 tox -e lint
 ```
+
+After the Pull Request was created and merged, the ``Publish Charm`` [Github action](.github/workflows/publish.yaml) will run, which will build the charm and publish it to Charmhub on the edge channel. You can read [here](docs/CharmPublishing.md) for more information about it.

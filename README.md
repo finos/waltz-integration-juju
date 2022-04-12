@@ -53,7 +53,7 @@ Alternatively, it can be configured with an external PostgreSQL database connect
 juju config finos-waltz-k8s db-host="<db-host>" db-port="<db-port>" db-name="<db-name>" db-username="<db-username>" db-password="<db-password>"
 ```
 
-For an in-depth guide on how to deploy Waltz in a local environment from scratch, see the [Local deployment guide](doc/LocalDeployment.md).
+For an in-depth guide on how to deploy the Waltz charm or the Waltz bundle in a local environment from scratch, see the [Local deployment guide](doc/LocalDeployment.md).
 
 ## Relations
 

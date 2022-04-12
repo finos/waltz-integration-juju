@@ -17,12 +17,12 @@ jobs:
       - name: Check libraries
         uses: canonical/charming-actions/check-libraries@1.0.0
         with:
-          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
+          credentials: "${{ secrets.CHARMCRAFT_TOKEN }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Upload charm to charmhub
         uses: canonical/charming-actions/upload-charm@1.0.2
         with:
-          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
+          credentials: "${{ secrets.CHARMCRAFT_TOKEN }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           upload-image: "false"
           channel: "edge"

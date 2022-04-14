@@ -43,6 +43,14 @@ juju deploy --trust finos-waltz-bundle --channel=edge
 
 The bundle contains the following charms: ``finos-waltz-k8s``, ``postgresql-k8s``, and ``nginx-ingress-integrator``. The bundle also creates creates relations between the ``finos-waltz-k8s`` charm and the ``postgresql-k8s`` and ``nginx-ingress-integrator`` charms.
 
+Alternatively, you can deploy a demo bundle containing a public dataset injected into the Waltz database for testing purposes:
+
+```bash
+juju deploy --trust finos-waltz-bundle --channel=public/edge
+```
+
+This demo bundle also contains a ``postgresql-data-k8s`` charm which is configured with a [PostgreSQL database dump](https://github.com/finos/waltz/files/8390039/postgres-dump-1.40.sql.gz), which will be injected periodically into the Waltz database in the related ``postgresql-k8s`` charm.
+
 In another terminal, you can check the deployment status and the integration code running using `watch --color juju status --color`. All the charms should become Active after a few minutes.
 
 The FINOS Waltz charm will use the PostgreSQL database provisioned by the ``postgresql-k8s`` charm. Alternatively, you can configure it with an external PostgreSQL connection details:

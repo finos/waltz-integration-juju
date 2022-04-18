@@ -28,9 +28,19 @@ juju config finos-waltz-k8s db-host="<db-host>" db-port="<db-port>" db-name="<db
 
 This charm requires the Waltz docker image: ``ghcr.io/finos/waltz``.
 
-## Charm releases
+## FINOS Waltz Charm and Bundle release automation process
 
-This repository is configured to automatically build and publish a new Charm revision after a Pull Request merges. For more information, see [here](docs/CharmPublishing.md).
+This repository is configured to automatically build and publish a new Charm revision after a Pull Request merges. The new charm revisions will be released on the ``latest/edge`` channel with the latest associated Waltz image revision. For more information, see [here](docs/CharmPublishing.md).
+
+The [waltz-juju-bundle](https://github.com/finos/waltz-juju-bundle) repository has a GitHub action configured to check periodically if there is a new [official Waltz release](https://github.com/finos/waltz/pkgs/container/waltz). If there is a new release, the GitHub action will do the following steps:
+
+- upload the new Waltz image versions file into Charmhub.
+- create a new release for the FINOS Waltz charm on the ``latest/edge`` and ``release-version/edge`` channels.
+- create a new ``release-release-version`` branch in the [waltz-juju-bundle](https://github.com/finos/waltz-juju-bundle) repository.
+- update the ``bundle.yaml`` file, having the Waltz charm use the ``release-version/edge`` channel and create a commit.
+- upload the new ``bundle.yaml`` file into Charmhub on the ``release-version/edge`` track.
+
+Each repository has included in its ``README.md`` file and docs information about how their GitHub actions have been configured and what repositories secrets they require. In summary, they all require a Charmhub authentication token that has the permission to upload resources for the respective charms.
 
 ## Help and Support
 

@@ -45,6 +45,7 @@ jobs:
         uses: claudiubelu/actions-operator@main
         with:
           provider: microk8s
+          microk8s-addons: "storage dns rbac ingress"
 
       - name: Run integration tests
         run: tox -vve integration

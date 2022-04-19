@@ -6,7 +6,7 @@
 
 This is the repository for the Waltz charmed operator, also known as "charm". This can be deployed individually or as a [bundle](https://github.com/finos/waltz-juju-bundle). 
 
-> 💡If you are evaluating Waltz, you should use the [bundle](https://github.com/finos/waltz-juju-bundle). You should only deploy this charmed operator by itself if you already have a PostgreSQL database.
+> 💡If you are evaluating Waltz, you should use the whole [bundle](https://github.com/finos/waltz-juju-bundle) instead of this single charm. You should only deploy this charmed operator by itself if you already have a PostgreSQL database.
 
 > 💡 You can find more information about Charmed Operators and Charmed Waltz in the [bundle](https://github.com/finos/waltz-juju-bundle) repository.
 

@@ -12,7 +12,7 @@ This is the repository for the Waltz charmed operator, also known as "charm". Th
 
 ## Deploying this Charmed Operator
 
-If you don’t have a Juju model, you can follow [this guide](https://github.com/finos/waltz-integration-juju/blob/main/docs/LocalDeployment.md) until the point you have one. You can then deploy this single charmed operator (instead of the whole bundle) running
+If you don’t have a Juju model, you can follow [this guide](https://github.com/finos/waltz-juju-bundle/blob/main/docs/guides/LocalDeployment.md) until the point you have one. You can then deploy this single charmed operator (instead of the whole bundle) running
 
 ```
 juju deploy finos-waltz-k8s

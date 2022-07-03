@@ -15,14 +15,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Check libraries
-        uses: canonical/charming-actions/check-libraries@1.0.0
+        uses: canonical/charming-actions/check-libraries@2.0.0-rc
         with:
-          credentials: "${{ secrets.CHARMCRAFT_TOKEN }}"
+          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Upload charm to charmhub
-        uses: canonical/charming-actions/upload-charm@1.0.2
+        uses: canonical/charming-actions/upload-charm@2.0.0-rc
         with:
-          credentials: "${{ secrets.CHARMCRAFT_TOKEN }}"
+          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           upload-image: "false"
           channel: "edge"

@@ -1,0 +1,51 @@
+name: Refresh EC2 FINOS Waltz deployment
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs everyday at 00:00. (see https://crontab.guru)
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    name: Trigger Juju refresh on EC2 Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh Deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -x
+
+            # Running juju status will show us the current revisions of the charms.
+            juju status --relations
+
+            juju refresh finos-waltz --channel edge
+            juju refresh waltz-ingress --channel stable
+
+            # Running juju status will show us the current revisions of the charms.
+            juju status --relations
+
+      - name: Check Waltz Public Instance status
+        run: |
+          wait_for_curl() {
+            url="$1"
+            for i in {1..30}; do
+              status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+              if [ "$status" = "200" ]; then
+                break
+              fi
+              if [ "$i" -eq 30 ]; then
+                echo "Failed to get 200 response status from $url. Got status $status."
+                exit 1
+              fi
+              sleep 10
+            done
+          }
+
+          wait_for_curl "http://demo.waltz.finos.org/"
+
+          echo "Waltz is reachable"

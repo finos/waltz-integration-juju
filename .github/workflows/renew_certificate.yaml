@@ -1,0 +1,35 @@
+name: Renew the CA-verified Certificate
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs at 00:00 on day-of-month 1 in every 2nd month. (see https://crontab.guru)
+    - cron: "0 0 1 */2 *"
+
+jobs:
+  build:
+    name: Trigger Juju renew certificate action on certbot-k8s
+    runs-on: ubuntu-latest
+    steps:
+      - name: Renewing Certificate
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            juju switch waltz-public-controller:waltz-public-model
+                    
+            # Running juju status will show us the current revisions of the charms.
+            juju status --relations
+
+            # Run the renew action on the certbot-k8s charm.
+            action_result=$(juju run-action certbot-k8s/0 renew-certificate --wait)
+
+            if [[ $action_result != *"status: completed"* ]]; then
+              echo "Certificate renewal failed:\n$action_result" 
+              exit 1
+            fi
+
+            # Show the juju status to see if any errors occurred.
+            juju status --relations

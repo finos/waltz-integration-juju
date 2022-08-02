@@ -64,7 +64,7 @@ TODO
 
 Visit Waltz [Contribution Guide](https://github.com/finos/waltz/blob/master/CONTRIBUTING.md) to learn how to contribute to Waltz.
 
-Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines on enhancements to this charm following best practice guidelines, and `DEVELOPMENT.md` for developer guidance.
+Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines on enhancements to this charm following best practice guidelines, and the [Developer Guide](docs/DeveloperGuide.md) for developer guidance.
 
 ## License
 

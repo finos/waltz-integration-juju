@@ -12,18 +12,26 @@ This is the repository for the Waltz charmed operator, also known as "charm". Th
 
 ## Deploying this Charmed Operator
 
-If you don’t have a Juju model, you can follow [this guide](https://github.com/finos/waltz-juju-bundle/blob/main/docs/guides/LocalDeployment.md) until the point you have one. You can then deploy this single charmed operator (instead of the whole bundle) running
+If you don’t have a Juju model, you can follow [this guide](https://github.com/finos/waltz-juju-bundle/blob/main/docs/guides/LocalDeployment.md) until the point you have one. You can then deploy this single charmed operator (instead of the whole bundle) running:
 
 ```
-juju deploy finos-waltz-k8s
+juju deploy finos-waltz-k8s --channel=edge
 ``` 
 
 ### Connecting to PostgreSQL
 
-To connect to your already existing PostgreSQL database, you can run
+To connect to your already existing PostgreSQL database, you can run:
 ```
 juju config finos-waltz-k8s db-host="<db-host>" db-port="<db-port>" db-name="<db-name>" db-username="<db-username>" db-password="<db-password>"
 ```
+
+If you do not have an existing PostgreSQL database, you can deploy a PostgreSQL database charm and relate it to the FINOS Waltz charm:
+
+```
+juju deploy postgresql-k8s
+juju relate postgresql-k8s:db finos-waltz-k8s:db
+```
+
 ## OCI Images
 
 This charm requires the Waltz docker image: ``ghcr.io/finos/waltz``.

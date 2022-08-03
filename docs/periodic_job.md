@@ -17,3 +17,9 @@ gh -R finos/waltz-integration-juju secret set SSH_KEY < ~/.ssh/id_rsa
 ```
 
 The CLI will prompt you to paste the `SSH_USER` and `SSH_HOST` secrets in the terminal, while `SSH_KEY` will load the private key from the specified location.
+
+Next, the public SSH key will have to be copied over to the Instance that will run the Waltz deployment. This can be done by simply running:
+
+```bash
+ssh-copy-id user@remote-host
+```

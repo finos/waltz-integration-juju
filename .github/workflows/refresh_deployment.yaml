@@ -46,6 +46,6 @@ jobs:
             done
           }
 
-          wait_for_curl "http://demo.waltz.finos.org/"
+          wait_for_curl "https://demo.waltz.finos.org/"
 
           echo "Waltz is reachable"

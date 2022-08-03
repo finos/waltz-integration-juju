@@ -56,12 +56,19 @@ async def test_build_and_deploy(ops_test: pytest_plugin.OpsTest):
 
     # Deploy the needed postgresql-k8s charm and relate it to the waltz charm.
     await ops_test.model.deploy(POSTGRESQL_CHARM)
-    await ops_test.model.add_relation("%s:db" % APP_NAME, "%s:db" % POSTGRESQL_CHARM)
 
     # issuing dummy update_status just to trigger an event
     await ops_test.model.set_config({"update-status-hook-interval": "10s"})
 
+    # Wait for it to become active.
+    await ops_test.model.wait_for_idle(apps=[POSTGRESQL_CHARM], status="active", timeout=2000)
+
+    # Relate the 2 charms together.
+    await ops_test.model.add_relation("%s:db" % APP_NAME, "%s:db" % POSTGRESQL_CHARM)
+
+    # Wait for the Waltz charm to become active.
     await ops_test.model.wait_for_idle(apps=[APP_NAME], status="active", timeout=2000)
+
     assert ops_test.model.applications[APP_NAME].units[0].workload_status == "active"
 
     # effectively disable the update status from firing

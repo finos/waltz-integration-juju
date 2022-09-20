@@ -24,7 +24,9 @@ jobs:
             juju status --relations
 
             # Run the renew action on the certbot-k8s charm.
+            echo "Running renew-certificate action..."
             action_result=$(juju run-action certbot-k8s/0 renew-certificate --wait)
+            echo "The renew-certificate action finished with the result: ${action_result}"
 
             if [[ $action_result != *"status: completed"* ]]; then
               echo "Certificate renewal failed:\n$action_result" 

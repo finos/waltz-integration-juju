@@ -41,6 +41,7 @@ class TestCharm(unittest.TestCase):
     def test_database_relation(self):
         """Test for the PostgreSQL relation."""
         # Setup mocks and start the initial hooks.
+        self.harness.begin_with_initial_hooks()
         container = self.harness.model.unit.get_container("waltz")
         self._patch(container, "stop")
         mock_can_connect = self._patch(container, "can_connect")
@@ -48,7 +49,6 @@ class TestCharm(unittest.TestCase):
 
         # Setting the leader will allow the PostgreSQL charm to write relation data.
         self.harness.set_leader(True)
-        self.harness.begin_with_initial_hooks()
 
         # Update the charm config, the charm should become Active.
         self.harness.update_config({"db-host": "foo.lish"})
@@ -92,13 +92,13 @@ class TestCharm(unittest.TestCase):
 
     def test_waltz_pebble_ready(self):
         # Check the initial Pebble plan is empty
+        self.harness.begin_with_initial_hooks()
         initial_plan = self.harness.get_container_pebble_plan("waltz")
         self.assertEqual(initial_plan.to_yaml(), "{}\n")
 
         # Get the waltz container from the model and emit the PebbleReadyEvent carrying it.
         container = self.harness.model.unit.get_container("waltz")
         mock_stop = self._patch(container, "stop")
-        self.harness.begin_with_initial_hooks()
         self.harness.charm.on.waltz_pebble_ready.emit(container)
 
         # No datebase host was configured, so the status should be Blocked.

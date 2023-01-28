@@ -25,7 +25,7 @@ NGINX_INGRESS_CHARM = "nginx-ingress-integrator"
 # Similarly, when the Ingress Route is being established, it takes a few seconds to take effect.
 @tenacity.retry(
     retry=tenacity.retry_if_result(lambda x: x is False),
-    stop=tenacity.stop_after_attempt(5),
+    stop=tenacity.stop_after_attempt(15),
     wait=tenacity.wait_exponential(multiplier=1, min=5, max=30),
 )
 def check_waltz_connection(url, headers=None):
@@ -52,7 +52,12 @@ async def test_build_and_deploy(ops_test: pytest_plugin.OpsTest):
     # build and deploy charm from local source folder
     charm = await ops_test.build_charm(".")
     resources = {"waltz-image": METADATA["resources"]["waltz-image"]["upstream-source"]}
-    await ops_test.model.deploy(charm, resources=resources, application_name=APP_NAME)
+    await ops_test.model.deploy(
+        charm,
+        series="focal",
+        resources=resources,
+        application_name=APP_NAME,
+    )
 
     # Deploy the needed postgresql-k8s charm and relate it to the waltz charm.
     await ops_test.model.deploy(POSTGRESQL_CHARM)

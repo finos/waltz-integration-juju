@@ -52,3 +52,15 @@ jobs:
           wait_for_curl "https://demo.waltz.finos.org/"
 
           echo "Waltz is reachable"
+
+      - name: Send email on failure
+        if: failure() && github.event_name == 'schedule'
+        uses: vineetchoudhary/mailgun-action@master
+        with:
+          api-key: ${{ secrets.MAILGUN_API_KEY }}
+          domain: ${{ secrets.MAILGUN_DOMAIN }}
+          to: ${{ secrets.EMAIL_TO }}
+          subject: "${{ github.job }} job of ${{ github.repository }} has failed"
+          body: "${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Send Mail Action Response
+        run: echo "${{ steps.sendmail.outputs.response }}"

@@ -23,3 +23,5 @@ Next, the public SSH key will have to be copied over to the Instance that will r
 ```bash
 ssh-copy-id user@remote-host
 ```
+
+The action will also send an email in case of failure, so it needs email related secrets to be set up as well: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `EMAIL_TO`.

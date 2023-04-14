@@ -71,3 +71,23 @@ tox -e lint
 
 After the Pull Request was created and merged, the ``Publish Charm`` [Github action](../.github/workflows/publish.yaml) will run, which will build the charm and publish it to Charmhub on the edge channel. You can read [here](CharmPublishing.md) for more information about it.
 
+## Known issues
+
+```
+err: ERROR starting proxy for api connection: connecting k8s proxy: Get "https://127.0.0.1:16443/api/v1/namespaces/controller-waltz-public-v3/services/controller-service": x509: certificate has expired or is not yet valid: current time 2023-04-09T00:00:52Z is after 2023-04-08T14:34:12Z
+```
+See example on https://github.com/finos/waltz-integration-juju/actions/runs/4647710763/jobs/8224851693#step:3:51 .
+
+This normally means that Kubernetes' credentials (which is a certificate) have expired. These credentials have 1 year TTL by default and can be easily renewed by running the following commands:
+
+```
+# need to be root for this.
+sudo su
+
+# check the certificates and their TTL.
+microk8s refresh-certs -c
+
+# refresh them.
+microk8s refresh-certs -e server.crt
+microk8s refresh-certs -e front-proxy-client.crt
+```

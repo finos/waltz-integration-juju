@@ -78,7 +78,7 @@ err: ERROR starting proxy for api connection: connecting k8s proxy: Get "https:/
 ```
 See example on https://github.com/finos/waltz-integration-juju/actions/runs/4647710763/jobs/8224851693#step:3:51 .
 
-This normally means that Kubernetes' credentials (which is a certificate) have expired. These credentials have 1 year TTL by default and can be easily renewed by running the following commands:
+This normally means that Kubernetes' credentials (which is a certificate) have expired. These credentials have 1 year TTL by default and can be easily renewed by running the following commands on the Waltz demo box:
 
 ```
 # need to be root for this.

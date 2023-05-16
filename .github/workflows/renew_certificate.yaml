@@ -3,8 +3,8 @@ name: Renew the CA-verified Certificate
 on:
   workflow_dispatch:
   schedule:
-    # Runs at 00:00 on day-of-month 1 in every 2nd month. (see https://crontab.guru)
-    - cron: "0 0 1 */2 *"
+    # Runs at 00:00 on the 1st and 15th day of every month. (see https://crontab.guru)
+    - cron: "0 0 1,15 * *"
 
 jobs:
   build:

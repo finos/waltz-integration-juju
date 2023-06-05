@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 METADATA = yaml.safe_load(pathlib.Path("./metadata.yaml").read_text())
 APP_NAME = METADATA["name"]
 POSTGRESQL_CHARM = "postgresql-k8s"
+POSTGRESQL_CHARM_CHANNEL = "14/stable"
 NGINX_INGRESS_CHARM = "nginx-ingress-integrator"
 
 
@@ -60,7 +61,7 @@ async def test_build_and_deploy(ops_test: pytest_plugin.OpsTest):
     )
 
     # Deploy the needed postgresql-k8s charm and relate it to the waltz charm.
-    await ops_test.model.deploy(POSTGRESQL_CHARM)
+    await ops_test.model.deploy(POSTGRESQL_CHARM, channel=POSTGRESQL_CHARM_CHANNEL)
 
     # issuing dummy update_status just to trigger an event
     await ops_test.model.set_config({"update-status-hook-interval": "10s"})

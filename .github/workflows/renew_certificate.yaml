@@ -18,8 +18,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Controller name is "waltz-public-v3", model name is "waltz-model-v3"
-            juju switch waltz-public-v3:waltz-model-v3
+            # The model name is "waltz-model-v3"
+            juju switch waltz-model-v3
                     
             # Running juju status will show us the current revisions of the charms.
             juju status --relations

@@ -1,0 +1,30 @@
+name: Update Waltz instance database refresh period
+
+on:
+  workflow_dispatch:
+    inputs:
+      period:
+        type: string
+        description: Waltz database refresh Period in minutes (0 turns off refresh).
+        required: true
+
+jobs:
+  build:
+    name: Update Waltz database refresh period on EC2 Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh Period
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -x
+
+            # The model name is "waltz-model-v3"
+            juju switch waltz-model-v3
+
+            juju config postgresql-data refresh-period="${{ github.event.inputs.period }}"
+
+            juju status --relations

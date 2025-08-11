@@ -1,0 +1,47 @@
+name: Update Waltz instance database dump
+
+on:
+  workflow_dispatch:
+    inputs:
+      sqldump:
+        type: string
+        description: Database SQL dump to be used by the Waltz demo instance.
+        required: true
+
+jobs:
+  build:
+    name: Update the Waltz demo instance's SQL dump.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update SQL dump
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -x
+
+            # The model name is "waltz-model-v3"
+            juju switch waltz-model-v3
+
+            # Running juju status will show us the current state of the charms.
+            juju status --relations
+
+            # Print the current SQL dump, so we can revert to it if necessary.
+            juju config postgresql-data sql-dump-url
+
+            # Save the current refresh period, and reset it after the update.
+            period="$(juju config postgresql-data refresh-period)"
+
+            # Set the new dump.
+            juju config postgresql-data refresh-period=1 sql-dump-url="${{ github.event.inputs.sqldump }}"
+
+            # Allow the database to be updated.
+            sleep 5
+
+            # Ideally, the postgresql-data application will not be in an error
+            # state.
+            juju status --relations
+
+            juju config postgresql-data refresh-period="${period}"

@@ -174,7 +174,7 @@ juju config sample-operator thing=foo
 
 Waltz
 ``` bash
-juju deploy ./waltz-operator_ubuntu-20.04-amd64.charm --resource waltz-image=ghcr.io/finos/waltz
+juju deploy ./waltz-operator_ubuntu-20.04-amd64.charm --resource waltz-image=ghcr.io/finos/waltz:postgres
 juju status
 
 juju config waltz-operator waltz-db-host="10.37.24.1"

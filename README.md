@@ -34,7 +34,7 @@ juju relate postgresql-k8s:db finos-waltz-k8s:db
 
 ## OCI Images
 
-This charm requires the Waltz docker image: ``ghcr.io/finos/waltz``.
+This charm requires the Waltz docker image: ``ghcr.io/finos/waltz:postgres``.
 
 ## FINOS Waltz Charm and Bundle release automation process
 
